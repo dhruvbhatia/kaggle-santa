@@ -1,4 +1,4 @@
-Kaggle 2013: Packing Santa's Sleigh
+Kaggle 2013 Holiday Competition: Packing Santa's Sleigh
 ============
 
 ### Description
