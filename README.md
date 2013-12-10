@@ -18,4 +18,5 @@ This solution yields a score of **5,270,836**
 
 ### Links
 <a href="http://www.kaggle.com/c/packing-santas-sleigh">Kaggle Competition page</a><br>
+<a href="https://www.kaggle.com/c/packing-santas-sleigh/forums/t/6570/julia-port-of-matlab-sample-solution">Kaggle Forum post</a><br>
 <a href="http://dhruvbhatia.com">My site</a>
