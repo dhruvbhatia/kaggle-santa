@@ -1,0 +1,97 @@
+# Julia port of the "MATLAB Packing Submission" Benchmark for Kaggle's 2013 Holiday Competition (Packing Santa's Sleigh)
+# Me: http://dhruvbhatia.com
+# Competiton: http://www.kaggle.com/c/packing-santas-sleigh
+
+using DataFrames
+using DataArrays
+using Stats
+using NumericExtensions
+
+# Import the data and set up data frames
+presents = readtable("data/presents.csv")
+
+numPresents = nrow(presents)
+
+presentIDs = presents["PresentId"]
+presentWidth = presents["Dimension1"]
+presentLength = presents["Dimension2"]
+presentHeight = presents["Dimension3"]
+
+presentVol = presentWidth .* presentLength .* presentHeight
+minVol = minimum(presentVol)
+maxVol = maximum(presentVol)
+
+# Solution
+sleighWidth = 1000
+sleighLength = 1000
+
+xs = 1
+ys = 1
+zs = 1
+
+lastRowIdxs = fill!([1:1000],0)
+lastLayerIdxs = fill!([1:1000],0)
+
+numInRow = 0
+numInLayer = 0
+
+presentCoords = DataFrame(PresentId = fill!([1:numPresents],0), x1 = fill!([1:numPresents],0), y1 = fill!([1:numPresents],0), z1 = fill!([1:numPresents],0), x2 = fill!([1:numPresents],0), y2 = fill!([1:numPresents],0), z2 = fill!([1:numPresents],0), x3 = fill!([1:numPresents],0), y3 = fill!([1:numPresents],0), z3 = fill!([1:numPresents],0), x4 = fill!([1:numPresents],0), y4 = fill!([1:numPresents],0), z4 = fill!([1:numPresents],0), x5 = fill!([1:numPresents],0), y5 = fill!([1:numPresents],0), z5 = fill!([1:numPresents],0), x6 = fill!([1:numPresents],0), y6 = fill!([1:numPresents],0), z6 = fill!([1:numPresents],0), x7 = fill!([1:numPresents],0), y7 = fill!([1:numPresents],0), z7 = fill!([1:numPresents],0), x8 = fill!([1:numPresents],0), y8 = fill!([1:numPresents],0), z8 = fill!([1:numPresents],0))
+
+for (i in 1:numPresents)
+
+# Move to the next row if there isn't room
+if (xs + presentWidth[i] > sleighWidth + 1)
+# exceeded allowable width
+ys = ys + maximum(presentLength[lastRowIdxs[1:numInRow]]) # increment y to ensure no overlap
+xs = 1
+numInRow = 1
+end
+
+# Move to the next layer if there isn't room
+if (ys + presentLength[i] > sleighLength + 1)
+# exceeded allowable length
+zs = zs - maximum(presentHeight[lastLayerIdxs[1:numInLayer]]) # increment z to ensure no overlap
+xs = 1
+ys = 1
+numInLayer = 0
+end
+
+# Fill present coordinate matrix
+presentCoords[i,1] = presentIDs[i]
+presentCoords[i,[2,8,14,20]] = xs
+presentCoords[i,[5,11,17,23]] = xs + presentWidth[i] - 1
+presentCoords[i,[3,6,15,18]] = ys
+presentCoords[i,[9,12,21,24]] = ys + presentLength[i] - 1
+presentCoords[i,[4,7,10,13]] = zs
+presentCoords[i,[16,19,22,25]] = zs - presentHeight[i] + 1
+
+# Update location info
+xs = xs + presentWidth[i]
+numInRow = numInRow + 1
+numInLayer = numInLayer + 1
+lastRowIdxs[numInRow] = presentIDs[i]
+lastLayerIdxs[numInLayer] = presentIDs[i]
+
+end
+
+# We started at z = -1 and went downward, need to shift so all z-values >= 1
+zCoords = presentCoords[1:end,[4,7,10,13,16,19,22,25]]
+minZ = minimum([presentCoords["z1"],presentCoords["z2"],presentCoords["z3"],presentCoords["z4"],presentCoords["z5"],presentCoords["z6"],presentCoords["z7"],presentCoords["z8"]])
+presentCoords[1:end,[4,7,10,13,16,19,22,25]] = zCoords - minZ + 1
+
+# Evaluation metric
+function getScore(submission)
+
+submission_Z = submission[1:end,[1,4,7,10,13,16,19,22,25]]
+submission_Z["maxZ"] = max(submission["z1"],submission["z2"],submission["z3"],submission["z4"],submission["z5"],submission["z6"],submission["z7"],submission["z8"])
+sortby(submission_Z,["maxZ","PresentId"])
+submission_Z["presentOrder"] = 1:nrow(submission_Z)
+
+println("Evaluation metric score is: ", 2 * maximum(submission_Z["maxZ"] + sum(abs(submission_Z["PresentId"] - submission_Z["presentOrder"]))))
+
+end
+
+# Output score and save solution
+getScore(presentCoords)
+writetable("data/output.csv", presentCoords)
+println("Solution saved to data/output.csv")
