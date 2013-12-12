@@ -84,7 +84,7 @@ function getScore(submission)
 
 submission_Z = submission[1:end,[1,4,7,10,13,16,19,22,25]]
 submission_Z["maxZ"] = max(submission["z1"],submission["z2"],submission["z3"],submission["z4"],submission["z5"],submission["z6"],submission["z7"],submission["z8"])
-sortby(submission_Z,["maxZ","PresentId"])
+sort!(submission_Z, cols=(order("maxZ", rev=true),"PresentId"))
 submission_Z["presentOrder"] = 1:nrow(submission_Z)
 
 println("Evaluation metric score is: ", 2 * maximum(submission_Z["maxZ"] + sum(abs(submission_Z["PresentId"] - submission_Z["presentOrder"]))))
