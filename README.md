@@ -8,6 +8,10 @@ This is a <a href="http://julialang.org/">Julia</a> port of the MATLAB sample so
 One possible approach would be to place the boxes in order going from top to bottom.  This will have the advantage of having 0 penalty for the ordering part of the metric, however the total height will likely not be very good.  To do this, we'll start by filling presents along the x-direction.  Once there's no more room in the x-direction, we increment
 the y-direction.  Once there's no more room in the y-direction, we increment the z-direction.*
 
+### Requirements
+I'm using the bleeding-edge sorting APIs from the `DataArrays` and `DataFrames` packages.
+As such, you will require the latest `MASTER` versions of these packages rather than the versions available through the standard `METADATA` repo. You can use `Pkg.clone("..github repo url")` to install these.
+
 ### How to use
 - Save `presents.csv` in `data/`
 - Run `solution.ji`
